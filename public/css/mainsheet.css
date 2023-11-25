@@ -1,16 +1,33 @@
 body {
     margin: 0;
+    font-family:sans-serif;
 }
 
 header {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    background-color: green;
+    font-size: 50px;
+    color:white;
+    padding: auto;
 }
 
 .headerbutton {
-    flex-basis: auto;
+    flex-basis: 100px;
+    font-size: 20px;
+    margin: 10px;
+    border: 2px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    background-color: firebrick;
+    padding: 5px 0;
 }
 
-.heeading {
+.heading {
     flex: 1;
+    text-align: center;
+
 }
