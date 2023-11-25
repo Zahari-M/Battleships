@@ -1,0 +1,14 @@
+{
+  "name": "battleships",
+  "version": "1.0.0",
+  "description": "Simple multiplayer implementation of the game Battleships in Express\r https://en.wikipedia.org/wiki/Battleship",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
