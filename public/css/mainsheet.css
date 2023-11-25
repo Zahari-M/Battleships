@@ -1,0 +1,16 @@
+body {
+    margin: 0;
+}
+
+header {
+    display: flex;
+    flex-direction: column;
+}
+
+.headerbutton {
+    flex-basis: auto;
+}
+
+.heeading {
+    flex: 1;
+}
