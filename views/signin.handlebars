@@ -1,0 +1,23 @@
+{{#section 'css'}}
+    <link rel="stylesheet" href="css/signin.css">
+{{/section}}
+
+<form action="/signin" method="post">
+  <ul>
+    <li>
+      <label for="name">Username:</label>
+      <input type="text" id="name" name="username" />
+    </li>
+    <li>
+      <label for="pwd">Password:</label>
+      <input type="password" id="pwd" name="password" />
+    </li>
+    <li>    
+        <button type="submit" class="normalbutton">Sign in</button>
+    </li>
+    <li>
+        Not registered? 
+        <a class="normalbutton" href="signup">Sign up</a>
+    </li>
+  </ul>
+</form>
