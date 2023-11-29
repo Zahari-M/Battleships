@@ -24,6 +24,8 @@ app.get('/', handlers.home);
 
 app.get('/signin', handlers.signin);
 
+app.get('/signup', handlers.signup);
+
 app.listen(port, "localhost", () => console.log(
     `Express started on http://localhost:${port}; ` +
     `press Ctrl-C to terminate.`));
