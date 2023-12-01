@@ -1,5 +1,8 @@
 const express = require("express");
 const { engine } = require('express-handlebars');
+const session = require('express-session');
+const passport = require('passport');
+
 const handlers = require('./lib/handlers.js');
 
 const port = process.env.PORT || 8080;
@@ -18,13 +21,42 @@ app.engine('handlebars', engine({helpers: {
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
+const secret = '123qwerty';
+
+app.use(express.urlencoded({extended: false}));
 app.use(express.static('public'))
+app.use(session({
+  secret: secret,
+  resave: false,
+  saveUninitialized: false
+  // TODO: implement database store
+}));
+app.use(passport.authenticate('session'));
 
 app.get('/', handlers.home);
 
 app.get('/signin', handlers.signin);
 
+app.post('/signin', handlers.signinpost);
+
 app.get('/signup', handlers.signup);
+
+app.post('/signup', handlers.signuppost);
+
+app.use(function(req, res, next) {
+  let obj = new Error();
+  obj.status = 404;
+  next(obj);
+});
+
+// error handler
+app.use(function(err, req, res, next) {
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+
 
 app.listen(port, "localhost", () => console.log(
     `Express started on http://localhost:${port}; ` +

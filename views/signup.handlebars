@@ -2,7 +2,7 @@
     <link rel="stylesheet" href="css/signin.css">
 {{/section}}
 
-<form action="/signin" method="post">
+<form action="/signup" method="post">
   <ul>
     <li>
       <label for="name">Username:</label>
@@ -16,9 +16,11 @@
       <label for="pwd">Repeat password:</label>
       <input type="password" id="pwd" name="repeatedpassword" />
     </li>
+    {{#if formmessage}}
     <li id="message">
-      Invalid input
+      {{formmessage}}
     </li>
+    {{/if}}
     <li>    
         <button type="submit" class="normalbutton">Sign up</button>
     </li>

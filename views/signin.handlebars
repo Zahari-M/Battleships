@@ -12,9 +12,11 @@
       <label for="pwd">Password:</label>
       <input type="password" id="pwd" name="password" />
     </li>
+    {{#if formmessage}}
     <li id="message">
-      Invalid input
+      {{formmessage}}
     </li>
+    {{/if}}
     <li>    
         <button type="submit" class="normalbutton">Sign in</button>
     </li>
