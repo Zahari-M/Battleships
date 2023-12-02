@@ -32,6 +32,23 @@ app.use(session({
   // TODO: implement database store
 }));
 app.use(passport.authenticate('session'));
+app.use(function(req, res, next) {
+  var msgs = req.session.messages || [];
+  res.locals.formmessage = msgs[0];
+ // res.locals.hasMessages = !! msgs.length;
+  req.session.messages = [];
+  next();
+});
+
+app.use(function(req, res, next) {
+  if (req.user) {
+    res.locals.signedin = true;
+  }
+  else {
+    res.locals.signedin = false;
+  }
+  next();
+});
 
 app.get('/', handlers.home);
 
@@ -42,6 +59,8 @@ app.post('/signin', handlers.signinpost);
 app.get('/signup', handlers.signup);
 
 app.post('/signup', handlers.signuppost);
+
+app.get('/signout', handlers.signout);
 
 app.use(function(req, res, next) {
   let obj = new Error();

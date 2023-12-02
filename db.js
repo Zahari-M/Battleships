@@ -23,7 +23,11 @@ exports.getUser = function(username, f) {
 }
 
 exports.addPoint = function(username) {
-    if (!map.get(username)) {
+    if (map.get(username)) {
         map.get(username).points++;
     }
+}
+
+exports.getPoints = function(username, f) {
+    f(map.get(username).points);
 }

@@ -13,9 +13,15 @@
       <div class="heading">
         Battleships
       </div>
+      {{#if signedin}}
+      <a class="headerbutton" href="/signout">
+        Sign out
+      </a>
+      {{else}}
       <a class="headerbutton" href="/signin">
         Sign in
       </a>
+      {{/if}}
     </header>
     {{{body}}}
     {{{_sections.scripts}}}
