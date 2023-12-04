@@ -2,7 +2,7 @@ const express = require("express");
 const { engine } = require('express-handlebars');
 const session = require('express-session');
 const passport = require('passport');
-
+const gamehandler = require('./lib/gamehandler.js');
 const handlers = require('./lib/handlers.js');
 
 const port = process.env.PORT || 8080;
@@ -62,15 +62,25 @@ app.post('/signup', handlers.signuppost);
 
 app.get('/signout', handlers.signout);
 
+app.get('/game', handlers.game);
+
+app.ws('/gamews', gamehandler);
+
+// not found handler
 app.use(function(req, res, next) {
   let obj = new Error();
   obj.status = 404;
   next(obj);
 });
 
+
 // error handler
 app.use(function(err, req, res, next) {
   // render the error page
+  if(req.path = '/gamews') {
+    next();
+    return;
+  }
   res.status(err.status || 500);
   res.render('error');
 });
