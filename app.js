@@ -6,6 +6,7 @@ const gamehandler = require('./lib/gamehandler.js');
 const handlers = require('./lib/handlers.js');
 
 const port = process.env.PORT || 8080;
+const host = 'localhost';
 
 const app = express();
 const expressWs = require('express-ws')(app); 
@@ -87,6 +88,6 @@ app.use(function(err, req, res, next) {
 
 
 
-app.listen(port, "localhost", () => console.log(
+app.listen(port, host, () => console.log(
     `Express started on http://localhost:${port}; ` +
     `press Ctrl-C to terminate.`));
