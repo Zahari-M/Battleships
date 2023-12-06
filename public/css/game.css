@@ -1,5 +1,70 @@
 
+* {
+    --board: 25vw;
+}
+
 #gamemessage {
     text-align: center;
     font-size: 1.5em;
+}
+
+.placementUI {
+    /*    width: var(--board); */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.board .redhover {
+    border: 2px solid red;
+}
+
+.board .greenhover {
+    border: 2px solid green;
+}
+.board {
+    display: grid;
+    width: var(--board);
+    height: var(--board);
+    grid-template-columns: repeat(10, 10%);
+    grid-template-rows: repeat(10, 10%);
+    border: 1px solid black;
+}
+
+.board div {
+    text-align: center;
+    line-height: 0.1*var(--board);
+    border: 1px solid gray;
+}
+
+.buttonContainer {
+    display: flex;
+    margin-top: 10px;
+    align-items: center;
+    justify-content: space-around;
+    width: var(--board);
+}
+
+.water {
+    background-color:aquamarine;
+}
+
+.normalbutton {
+    font-weight: bold;
+    padding: 0.2em 0.5em;
+    cursor: initial;
+}
+
+.inactivebutton {
+    background-color: gray;
+}
+
+.pointer {
+    cursor:pointer;
+}
+
+.board .ship {
+    background-color: lightgray;
+    border: 2px solid brown;
 }
