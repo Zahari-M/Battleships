@@ -36,7 +36,7 @@
     text-align: center;
     line-height: calc(0.1*var(--board));
     border: 1px solid gray;
-    font-size: 1.8em;
+    font-size: 1.3em;
     cursor: default;
 }
 
@@ -72,16 +72,18 @@
     background-color:aquamarine;
 }
 
-.unknown {
+.board .unknown {
     background-color: whitesmoke;
+    font-size: 1.5em;
 }
 
 .unknown::before {
     content: '?';
 }
 
-.destroyed {
+.board .destroyed {
     background-color: darkred;
+    border: 2px solid brown;
 }
 
 .normalbutton {
@@ -100,6 +102,10 @@
 
 .pointer {
     cursor:pointer;
+}
+
+.board .pointer {
+    cursor: pointer;
 }
 
 .board .ship {

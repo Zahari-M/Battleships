@@ -24,6 +24,8 @@ const maxShipLength = 5;
 const minShipLength = 2;
 let currentStatus = playerStatus.DISCONNECTED;
 let enemyName = "";
+let playerShipCount = null;
+let enemyShipCount = null;
 let placementUI = null;
 let gameUI = null;
 let disabled = false;
@@ -105,6 +107,31 @@ class Board {
                 break; 
         }
         this.fields[i][j].className = classname;
+    }
+
+    setBomb(x, y) {
+        this.bombs[x][y] = true;
+        this.fields[x][y].textContent = '\u{1F4A3}';
+    }
+
+    setField(x, y, status) {
+        this.representation[x][y] = status;
+        this.draw(x, y);
+    }
+
+    destroyShip(ship) {
+        let {x,y,shipsize,hor} = ship;
+        if (hor) {
+            for (let k = y; k < y + shipsize; k++) {
+                this.representation[x][k] = fieldStates.DESTROYED;
+                this.draw(x, k);
+            }
+        } else {
+            for (let k = x; k < x + shipsize; k++) {
+                this.representation[k][y] = fieldStates.DESTROYED;
+                this.draw(k, y);
+            }
+        }
     }
 }
 
@@ -290,8 +317,29 @@ class EnemyBoard extends Board {
                     if (this.representation[i][j] != fieldStates.UNKNOWN || disabled) {
                         return;
                     }
+                    ws.send(JSON.stringify({x: +i, y: +j}));
+                    disabled = true;
+                    this.unsetPointer();
                     // TODO: send to server
                 }
+            }
+        }
+    }
+
+    setPointer() {
+        for(let i in this.representation) {
+            for (let j in this.representation[i]) {
+                if (this.representation[i][j] === fieldStates.UNKNOWN) {
+                    this.fields[i][j].classList.add('pointer');
+                }
+            }
+        }
+    }
+
+    unsetPointer() {
+        for(let i in this.representation) {
+            for (let j in this.representation[i]) {
+                this.fields[i][j].classList.remove('pointer');
             }
         }
     }
@@ -302,15 +350,15 @@ class GameUI {
     enemyBoard;
     playerMessage;
     enemyMessage;
-    constructor(oldrepr, maxTotalShipCount) {
+    constructor(oldrepr) {
         this.playerBoard = new Board(oldrepr);
         this.enemyBoard = new EnemyBoard();
 
         this.playerMessage = document.createElement('div');
         this.enemyMessage = document.createElement('div');
         this.playerMessage.className = this.enemyMessage.className = 'boardinfo';
-        this.#setPlayerMessage(maxTotalShipCount);
-        this.#setEnemyMessage(maxTotalShipCount);
+        this.setPlayerMessage();
+        this.setEnemyMessage();
 
         let gameContainer = document.createElement('div');
         gameContainer.className = 'gamecontainer';
@@ -318,12 +366,12 @@ class GameUI {
         container.append(gameContainer);
     }
 
-    #setPlayerMessage(count) {
-        this.playerMessage.textContent = 'You have ' + count + ' ships left.';
+    setPlayerMessage() {
+        this.playerMessage.textContent = 'You have ' + playerShipCount + ' ships left.';
     }
 
-    #setEnemyMessage(count) {
-        this.enemyMessage.textContent = enemyName + ' has ' + count + ' ships left.';
+    setEnemyMessage() {
+        this.enemyMessage.textContent = enemyName + ' has ' + enemyShipCount + ' ships left.';
     }
 }
 
@@ -358,19 +406,40 @@ ws.onmessage = function(msgevent) {
             
             let oldrepr = placementUI.placementBoard.representation;
             clearUI();
-            gameUI = new GameUI(oldrepr, msg.maxshipcount);
+            playerShipCount = enemyShipCount = msg.maxshipcount;
+            gameUI = new GameUI(oldrepr);
             
             currentStatus = msg.status;
-            if (currentStatus === playerStatus.ATTACKING) {
+            if (msg.status === playerStatus.ATTACKING) {
                 disabled = false;
+                gameUI.enemyBoard.setPointer();
             }
             setMessage();
             return;
         }
         
+        if (currentStatus === playerStatus.ATTACKING) {
+            let {x,y} = msg.bomb;
+            gameUI.enemyBoard.setField(x, y, msg.fieldstate);
+            gameUI.enemyBoard.setBomb(x, y);
+            if (msg.destroyedship) {
+                gameUI.enemyBoard.destroyShip(msg.destroyedship);
+                enemyShipCount--;
+                gameUI.setEnemyMessage();
+            }
+        } else {
+            let {x,y} = msg.bomb;
+            gameUI.playerBoard.setBomb(x, y);
+            if (msg.destroyedship) {
+                gameUI.playerBoard.destroyShip(msg.destroyedship);
+                playerShipCount--;
+                gameUI.setPlayerMessage();
+            }
+            disabled = false;
+            gameUI.enemyBoard.setPointer();
+        }
         currentStatus = msg.status;
-
-
+        setMessage();
     }
 }
 
