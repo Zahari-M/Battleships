@@ -34,8 +34,15 @@
 
 .board div {
     text-align: center;
-    line-height: 0.1*var(--board);
+    line-height: calc(0.1*var(--board));
     border: 1px solid gray;
+    font-size: 1.8em;
+    cursor: default;
+}
+
+.board div::selection {
+    color:inherit;
+    background-color: transparent;
 }
 
 .buttonContainer {
@@ -46,8 +53,35 @@
     width: var(--board);
 }
 
+.gamecontainer {
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto auto;
+    column-gap: calc(0.3*var(--board));
+    grid-template-rows: auto auto;
+    width: calc(2.3*var(--board));
+}
+
+.boardinfo {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1.2em;
+}
+
 .water {
     background-color:aquamarine;
+}
+
+.unknown {
+    background-color: whitesmoke;
+}
+
+.unknown::before {
+    content: '?';
+}
+
+.destroyed {
+    background-color: darkred;
 }
 
 .normalbutton {
@@ -58,6 +92,10 @@
 
 .inactivebutton {
     background-color: gray;
+}
+
+.board .pointer {
+    cursor: pointer;
 }
 
 .pointer {

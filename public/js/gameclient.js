@@ -2,7 +2,7 @@ const port = '8080';
 let ws = new WebSocket("ws://" + window.location.hostname + ":" + port + "/gamews");
 
 const gameMessage = document.getElementById('gamemessage');
-const gameContainer = document.getElementById('container');
+const container = document.getElementById('container');
 const playerStatus = {
     DISCONNECTED: 0,
     PENDING: 1,
@@ -29,9 +29,26 @@ let gameUI = null;
 let disabled = false;
 
 function clearUI() {
-    gameContainer.textContent = "";
+    container.textContent = "";
     placementUI = null;
     gameUI = null;
+}
+
+function setMessage() {
+    switch(currentStatus) {
+        case playerStatus.PLACING:
+            gameMessage.textContent = "Place your ships.";
+            break;
+        case playerStatus.READY:
+            gameMessage.textContent = "Waiting " + enemyName + ".";
+            break;
+        case playerStatus.ATTACKING:
+            gameMessage.textContent = "It's your turn.";
+            break;
+        case playerStatus.IDLE:
+            gameMessage.textContent = "It's " + enemyName + "'s turn.";
+            break;
+    }
 }
 
 class Board {
@@ -39,9 +56,8 @@ class Board {
     fields;
     representation;
     bombs;
-    constructor(repr, bombs) {
+    constructor(repr) {
         this.representation = repr;
-        this.bombs = bombs;
         this.root = document.createElement('div');
         this.root.className = 'board';
         this.fields = new Array(boardSize);
@@ -52,29 +68,50 @@ class Board {
                 this.root.appendChild( this.fields[i][j]);
             }
         }
+
+        this.bombs = new Array(boardSize);
+        for (let i=0; i<boardSize; i++) {
+            this.bombs[i] = new Array(boardSize);
+            for (let j=0; j<boardSize; j++) {
+                this.bombs[i][j] = false;
+            }
+        }
+
+        this.drawBoard();
     }
 
     drawBoard() {
         for(let i in this.fields) {
             for (let j in this.fields[i]) {
-                if (this.representation[i][j] == fieldStates.UNKNOWN) {
-
-                } else if (this.representation[i][j] == fieldStates.WATER) {
-                    this.fields[i][j].className = 'water';
-                } else if (this.representation[i][j] == fieldStates.SHIP) {
-                    this.fields[i][j].className = 'ship';
-                } else if (this.representation[i][j] == fieldStates.DESTROYED) {
-
-                }
+                this.draw(i,j);
             }
         }
+    }
+
+    draw(i, j) {
+        let classname = ''
+        switch (this.representation[i][j]) {
+            case fieldStates.UNKNOWN:
+                classname = 'unknown';
+                break;
+            case fieldStates.WATER:
+                classname = 'water';
+                break;
+            case fieldStates.SHIP:
+                classname = 'ship';
+                break;
+            case fieldStates.DESTROYED:
+                classname = 'destroyed';
+                break; 
+        }
+        this.fields[i][j].className = classname;
     }
 }
 
 class PlacementBoard extends Board {
     ship = null;
     constructor(repr) {
-        super(repr, null);
+        super(repr);
         for(let i in this.fields) {
             for (let j in this.fields[i]) {
                 this.fields[i][j].onclick = () => {
@@ -184,7 +221,7 @@ class PlacementUI {
         let placementUIdiv = document.createElement('div');
         placementUIdiv.className = 'placementUI';
         placementUIdiv.appendChild(this.placementBoard.root);
-        gameContainer.appendChild(placementUIdiv);
+        container.appendChild(placementUIdiv);
 
         // buttons
         this.enabledButtons = new Array(maxShipLength+1).fill(true);
@@ -239,11 +276,56 @@ class PlacementUI {
     }
 }
 
-class GameUI {
+class EnemyBoard extends Board {
+    constructor() {
+        let repr = new Array(boardSize);
+        for(let i = 0; i < boardSize; i++) {
+            repr[i] = new Array(boardSize).fill(fieldStates.UNKNOWN);
+        }
+        super(repr);
 
+        for(let i in this.fields) {
+            for (let j in this.fields[i]) {
+                this.fields[i][j].onclick = () => {
+                    if (this.representation[i][j] != fieldStates.UNKNOWN || disabled) {
+                        return;
+                    }
+                    // TODO: send to server
+                }
+            }
+        }
+    }
 }
 
+class GameUI {
+    playerBoard;
+    enemyBoard;
+    playerMessage;
+    enemyMessage;
+    constructor(oldrepr, maxTotalShipCount) {
+        this.playerBoard = new Board(oldrepr);
+        this.enemyBoard = new EnemyBoard();
 
+        this.playerMessage = document.createElement('div');
+        this.enemyMessage = document.createElement('div');
+        this.playerMessage.className = this.enemyMessage.className = 'boardinfo';
+        this.#setPlayerMessage(maxTotalShipCount);
+        this.#setEnemyMessage(maxTotalShipCount);
+
+        let gameContainer = document.createElement('div');
+        gameContainer.className = 'gamecontainer';
+        gameContainer.append(this.playerBoard.root, this.enemyBoard.root, this.playerMessage, this.enemyMessage);
+        container.append(gameContainer);
+    }
+
+    #setPlayerMessage(count) {
+        this.playerMessage.textContent = 'You have ' + count + ' ships left.';
+    }
+
+    #setEnemyMessage(count) {
+        this.enemyMessage.textContent = enemyName + ' has ' + count + ' ships left.';
+    }
+}
 
 ws.onopen = function() {
     currentStatus = playerStatus.PENDING;
@@ -253,8 +335,8 @@ ws.onopen = function() {
 ws.onmessage = function(msgevent) {
     let msg = JSON.parse( msgevent.data );
     console.log(msg);
-    if (msg.status == playerStatus.PLACING) {
-        if(currentStatus == playerStatus.PENDING) {
+    if (msg.status === playerStatus.PLACING) {
+        if(currentStatus === playerStatus.PENDING) {
             gameMessage.textContent = "Place your ships";
             placementUI = new PlacementUI();
             enemyName = msg.enemyName;
@@ -265,11 +347,30 @@ ws.onmessage = function(msgevent) {
         placementUI.placementBoard.addShip(msg.ship);
         placementUI.updateUI();
         disabled = false;
-    } else if (msg.status == playerStatus.READY) {
+    } else if (msg.status === playerStatus.READY) {
+        currentStatus = playerStatus.READY;
         placementUI.enabledButtons = msg.activebuttons;
         placementUI.placementBoard.addShip(msg.ship);
         placementUI.updateUI();
         gameMessage.textContent = "Waiting " + enemyName;
+    } else if (msg.status === playerStatus.ATTACKING || msg.status === playerStatus.IDLE) {
+        if (currentStatus === playerStatus.READY) {
+            
+            let oldrepr = placementUI.placementBoard.representation;
+            clearUI();
+            gameUI = new GameUI(oldrepr, msg.maxshipcount);
+            
+            currentStatus = msg.status;
+            if (currentStatus === playerStatus.ATTACKING) {
+                disabled = false;
+            }
+            setMessage();
+            return;
+        }
+        
+        currentStatus = msg.status;
+
+
     }
 }
 
