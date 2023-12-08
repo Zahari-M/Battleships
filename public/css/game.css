@@ -1,6 +1,9 @@
 
 * {
     --board: 25vw;
+    --questionsize: calc(0.07*var(--board));
+    --divfontsize: calc(0.06*var(--board));
+    --lineheightship: calc(0.1*var(--board) - 4px);
 }
 
 #gamemessage {
@@ -34,9 +37,9 @@
 
 .board div {
     text-align: center;
-    line-height: calc(0.1*var(--board));
+    line-height: calc(0.1*var(--board) - 2px);
     border: 1px solid gray;
-    font-size: 1.3em;
+    font-size: var(--divfontsize);
     cursor: default;
 }
 
@@ -74,7 +77,7 @@
 
 .board .unknown {
     background-color: whitesmoke;
-    font-size: 1.5em;
+    font-size: var(--questionsize);
 }
 
 .unknown::before {
@@ -111,4 +114,5 @@
 .board .ship {
     background-color: lightgray;
     border: 2px solid brown;
+    line-height: var(--lineheightship);
 }
