@@ -50,6 +50,12 @@ function setMessage() {
         case playerStatus.IDLE:
             gameMessage.textContent = "It's " + enemyName + "'s turn.";
             break;
+        case playerStatus.WON:
+            gameMessage.textContent = "You won!";
+            break;
+        case playerStatus.LOST:
+            gameMessage.textContent = enemyName + " has won!";
+            break;
     }
 }
 
@@ -320,7 +326,6 @@ class EnemyBoard extends Board {
                     ws.send(JSON.stringify({x: +i, y: +j}));
                     disabled = true;
                     this.unsetPointer();
-                    // TODO: send to server
                 }
             }
         }
@@ -383,8 +388,8 @@ ws.onopen = function() {
 ws.onmessage = function(msgevent) {
     let msg = JSON.parse( msgevent.data );
     console.log(msg);
-    if (msg.status === playerStatus.PLACING) {
-        if(currentStatus === playerStatus.PENDING) {
+    if (msg.status === playerStatus.PLACING) {   // PLACING STATUS
+        if(currentStatus === playerStatus.PENDING) { 
             gameMessage.textContent = "Place your ships";
             placementUI = new PlacementUI();
             enemyName = msg.enemyName;
@@ -395,13 +400,13 @@ ws.onmessage = function(msgevent) {
         placementUI.placementBoard.addShip(msg.ship);
         placementUI.updateUI();
         disabled = false;
-    } else if (msg.status === playerStatus.READY) {
+    } else if (msg.status === playerStatus.READY) {  // READY STATUS
         currentStatus = playerStatus.READY;
         placementUI.enabledButtons = msg.activebuttons;
         placementUI.placementBoard.addShip(msg.ship);
         placementUI.updateUI();
         gameMessage.textContent = "Waiting " + enemyName;
-    } else if (msg.status === playerStatus.ATTACKING || msg.status === playerStatus.IDLE) {
+    } else if (msg.status === playerStatus.ATTACKING || msg.status === playerStatus.IDLE) { // INGAME STATUS
         if (currentStatus === playerStatus.READY) {
             
             let oldrepr = placementUI.placementBoard.representation;
@@ -440,11 +445,18 @@ ws.onmessage = function(msgevent) {
         }
         currentStatus = msg.status;
         setMessage();
+    } else if (msg.status === playerStatus.WON || msg.status === playerStatus.LOST) {
+        gameUI.enemyBoard.unsetPointer();
+        disabled = true;
+        currentStatus = msg.status;
+        setMessage();
     }
 }
 
 ws.onclose = function() {
-    clearUI();
-    gameMessage.textContent = "A player disconnected.";
+    if (currentStatus !== playerStatus.WON && currentStatus !== playerStatus.LOST) {
+        clearUI();
+        gameMessage.textContent = "A player disconnected.";
+    }
 }
 
