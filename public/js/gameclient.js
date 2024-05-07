@@ -440,9 +440,15 @@ ws.onmessage = function(msgevent) {
                 playerShipCount--;
                 gameUI.setPlayerMessage();
             }
+        }
+
+        if (msg.status === playerStatus.ATTACKING) {
             disabled = false;
             gameUI.enemyBoard.setPointer();
+        } else {
+            
         }
+
         currentStatus = msg.status;
         setMessage();
     } else if (msg.status === playerStatus.WON || msg.status === playerStatus.LOST) {
